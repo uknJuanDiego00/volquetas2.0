@@ -12,6 +12,9 @@
     "prisma:seed": "tsx prisma/seed.ts",
     "test": "tsx tests/financialEngine.test.ts"
   },
+  "prisma": {
+    "schema": "prisma/schema.prisma"
+  },
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "axios": "^1.7.9",
