@@ -5,8 +5,8 @@
   "private": true,
   "scripts": {
     "build": "npm --prefix backend run build && npm --prefix frontend run build",
-    "start": "node backend/dist/index.js",
-    "render:build": "cd backend && npm install && npx prisma generate --schema=prisma/schema.prisma && npx prisma db push --schema=prisma/schema.prisma && npx tsx prisma/seed.ts && npm run build && cd ../frontend && npm install && npm run build && cd ..",
+    "start": "cd backend && node dist/index.js",
+    "render:build": "cd backend && npm install --include=dev && npx prisma generate --schema=prisma/schema.prisma && npx prisma db push --schema=prisma/schema.prisma && npx tsx prisma/seed.ts && npm run build && cd ../frontend && npm install --include=dev && npm run build && cd ..",
     "render:start": "cd backend && node dist/index.js",
     "test": "npm --prefix backend test"
   },
