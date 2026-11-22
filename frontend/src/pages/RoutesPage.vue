@@ -100,7 +100,7 @@
         </span>
       </div>
 
-      <div class="h-[450px]">
+      <div class="h-[340px] sm:h-[450px] lg:h-[550px] xl:h-[620px]">
         <LeafletMap
           :origen="rutaData?.origen ? { lat: rutaData.origen.lat, lon: rutaData.origen.lon, nombre: rutaData.origen.nombre } : null"
           :destino="rutaData?.destino ? { lat: rutaData.destino.lat, lon: rutaData.destino.lon, nombre: rutaData.destino.nombre } : null"

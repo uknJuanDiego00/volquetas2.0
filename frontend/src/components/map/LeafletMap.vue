@@ -2,22 +2,22 @@
   <div class="relative w-full h-full min-h-[350px] rounded-xl overflow-hidden border border-slate-200 shadow-inner">
     <div ref="mapContainer" class="w-full h-full min-h-[350px] z-10"></div>
 
-    <!-- Leyenda flotante -->
-    <div class="absolute bottom-3 left-3 z-20 bg-white/90 backdrop-blur-md px-3 py-2 rounded-lg shadow-md border border-slate-200 text-xs flex flex-wrap items-center gap-3">
-      <div class="flex items-center gap-1.5">
-        <span class="w-3 h-3 rounded-full bg-emerald-600 inline-block shadow"></span>
+    <!-- Leyenda flotante responsive -->
+    <div class="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 z-20 bg-white/95 backdrop-blur-md px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg shadow-md border border-slate-200 text-[10px] sm:text-xs flex flex-wrap items-center gap-2 sm:gap-3 max-w-[90%]">
+      <div class="flex items-center gap-1 sm:gap-1.5">
+        <span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-600 inline-block shadow"></span>
         <span class="font-medium text-slate-700">Origen</span>
       </div>
-      <div class="flex items-center gap-1.5">
-        <span class="w-3 h-3 rounded-full bg-rose-600 inline-block shadow"></span>
+      <div class="flex items-center gap-1 sm:gap-1.5">
+        <span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-rose-600 inline-block shadow"></span>
         <span class="font-medium text-slate-700">Destino</span>
       </div>
-      <div class="flex items-center gap-1.5">
-        <span class="w-3 h-3 rounded-full bg-amber-500 inline-block shadow"></span>
+      <div class="flex items-center gap-1 sm:gap-1.5">
+        <span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-amber-500 inline-block shadow"></span>
         <span class="font-medium text-slate-700">Peaje</span>
       </div>
-      <div class="flex items-center gap-1.5">
-        <span class="w-6 h-1 rounded bg-emerald-700 inline-block"></span>
+      <div class="flex items-center gap-1 sm:gap-1.5">
+        <span class="w-4 sm:w-6 h-1 rounded bg-emerald-700 inline-block"></span>
         <span class="font-medium text-slate-700">Ruta OSRM</span>
       </div>
     </div>
@@ -155,11 +155,22 @@ watch(() => [props.origen, props.destino, props.geometriaGeoJson, props.peajes],
   updateLayers();
 }, { deep: true });
 
+const handleResize = () => {
+  if (map) {
+    map.invalidateSize();
+  }
+};
+
 onMounted(() => {
-  setTimeout(initMap, 100);
+  setTimeout(() => {
+    initMap();
+    handleResize();
+  }, 100);
+  window.addEventListener('resize', handleResize);
 });
 
 onUnmounted(() => {
+  window.removeEventListener('resize', handleResize);
   if (map) {
     map.remove();
     map = null;

@@ -95,12 +95,12 @@
       </div>
     </div>
 
-    <!-- MODAL REGISTRO / EDICIÓN -->
+    <!-- MODAL REGISTRO / EDICIÓN RESPONSIVE -->
     <div
       v-if="mostrarModal"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto"
+      class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto"
     >
-      <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200">
+      <div class="bg-white rounded-2xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto my-auto">
         <div class="flex items-center justify-between pb-4 border-b border-slate-100">
           <h3 class="font-extrabold text-slate-800 text-lg">
             {{ vehiculoEditando?.id ? 'Editar Volqueta' : 'Registrar Nueva Volqueta' }}

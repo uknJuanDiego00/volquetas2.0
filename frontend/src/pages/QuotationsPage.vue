@@ -16,17 +16,17 @@
     </div>
 
     <!-- CALCULADORA INTELIGENTE REACTIVA -->
-    <div id="calculator-section" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+    <div id="calculator-section" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6 lg:p-8 space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
         <h3 class="font-extrabold text-base text-slate-800 flex items-center gap-2">
           <span>🧮</span> Parámetros del Viaje & Volqueta
         </h3>
-        <span class="text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-lg font-bold">
+        <span class="text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-lg font-bold self-start sm:self-auto">
           Motor Financiero Activo
         </span>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- COLUMNA 1: VEHÍCULO Y RUTA -->
         <div class="space-y-4 text-xs">
           <div>
