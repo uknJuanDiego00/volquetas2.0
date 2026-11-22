@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # Base de Datos Relacional PostgreSQL para Producción
+  postgres:
+    image: postgres:16-alpine
+    container_name: volqueta_pro_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: volqueta_user
+      POSTGRES_PASSWORD: volqueta_secure_password_2026
+      POSTGRES_DB: volqueta_pro_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - volqueta_network
+
+  # Backend REST API Node.js / Express
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: volqueta_pro_backend
+    restart: always
+    environment:
+      PORT: 4000
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://volqueta_user:volqueta_secure_password_2026@postgres:5432/volqueta_pro_db?schema=public"
+      JWT_SECRET: super_secret_volqueta_pro_key_jwt_2026_colombia
+      JWT_EXPIRES_IN: 7d
+    ports:
+      - "4000:4000"
+    depends_on:
+      - postgres
+    networks:
+      - volqueta_network
+
+  # Frontend Vue 3 + Nginx
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: volqueta_pro_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - volqueta_network
+
+volumes:
+  postgres_data:
+
+networks:
+  volqueta_network:
+    driver: bridge

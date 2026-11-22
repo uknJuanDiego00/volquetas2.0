@@ -1,0 +1,339 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Rol {
+  id          Int       @id @default(autoincrement())
+  nombre      String    @unique
+  descripcion String?
+  permisos    String?   // JSON con lista de permisos
+  usuarios    Usuario[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("roles")
+}
+
+model Usuario {
+  id              Int               @id @default(autoincrement())
+  nombre          String
+  email           String            @unique
+  passwordHash    String
+  rolId           Int
+  rol             Rol               @relation(fields: [rolId], references: [id])
+  activo          Boolean           @default(true)
+  ultimoLogin     DateTime?
+  cotizaciones    Cotizacion[]
+  viajes          Viaje[]
+  auditorias      AuditoriaCambio[]
+  historialPrecios HistorialPrecioAcpm[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@map("usuarios")
+}
+
+model Vehiculo {
+  id                     Int          @id @default(autoincrement())
+  placa                  String       @unique
+  marca                  String
+  modelo                 String
+  anio                   Int
+  tipoVolqueta           String       // SENCILLA_2_EJES, DOBLE_TROQUE_3_EJES, CUATRO_MANOS_4_EJES, MULA_TRACTO
+  capacidadToneladas     Float
+  capacidadM3            Float
+  rendimientoKmGalonVacio Float
+  rendimientoKmGalonCargado Float
+  kilometrajeActual      Float        @default(0)
+  precioGalonAcpm        Float        @default(0)
+  estado                 String       @default("ACTIVO") // ACTIVO, MANTENIMIENTO, INACTIVO
+  costoMantenimientoKm   Float        @default(0)
+  costoLlantasKm         Float        @default(0)
+  costoDepreciacionKm    Float        @default(0)
+  cotizaciones           Cotizacion[]
+  viajes                 Viaje[]
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+
+  @@map("vehiculos")
+}
+
+model Conductor {
+  id              Int       @id @default(autoincrement())
+  nombre          String
+  documento       String    @unique
+  telefono        String?
+  tipoPagoDefecto String    @default("VIAJE") // VIAJE, KM, DIA
+  tarifaBase      Float     @default(0)
+  activo          Boolean   @default(true)
+  viajes          Viaje[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("conductores")
+}
+
+model Cliente {
+  id           Int          @id @default(autoincrement())
+  razonSocial  String
+  nitCedula    String       @unique
+  contacto     String?
+  telefono     String?
+  email        String?
+  direccion    String?
+  cotizaciones Cotizacion[]
+  viajes       Viaje[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@map("clientes")
+}
+
+model Departamento {
+  id         Int         @id @default(autoincrement())
+  codigoDane String      @unique
+  nombre     String
+  municipios Municipio[]
+  createdAt  DateTime    @default(now())
+
+  @@map("departamentos")
+}
+
+model Municipio {
+  id               Int           @id @default(autoincrement())
+  codigoDane       String        @unique
+  nombre           String
+  departamentoId   Int
+  departamento     Departamento  @relation(fields: [departamentoId], references: [id])
+  latitud          Float
+  longitud         Float
+  preciosAcpm      PrecioAcpm[]
+  rutasOrigen      Ruta[]        @relation("RutaOrigen")
+  rutasDestino     Ruta[]        @relation("RutaDestino")
+  cotizacionesOrigen Cotizacion[] @relation("CotizacionOrigen")
+  cotizacionesDestino Cotizacion[] @relation("CotizacionDestino")
+  createdAt        DateTime      @default(now())
+
+  @@index([nombre])
+  @@map("municipios")
+}
+
+model Ruta {
+  id                   Int             @id @default(autoincrement())
+  origenId             Int
+  destinoId            Int
+  origen               Municipio       @relation("RutaOrigen", fields: [origenId], references: [id])
+  destino              Municipio       @relation("RutaDestino", fields: [destinoId], references: [id])
+  distanciaKm          Float
+  duracionEstimadaMin  Float
+  geometriaGeoJson     String?         // Cadena JSON con polilínea de OSRM
+  peajesSugeridosIds   String?         // IDs de peajes cruzados en formato JSON
+  esFrecuente          Boolean         @default(false)
+  historialRutas       HistorialRuta[]
+  cotizaciones         Cotizacion[]
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  @@unique([origenId, destinoId])
+  @@map("rutas")
+}
+
+model HistorialRuta {
+  id          Int      @id @default(autoincrement())
+  rutaId      Int
+  ruta        Ruta     @relation(fields: [rutaId], references: [id])
+  distanciaKm Float
+  duracionMin Float
+  fuente      String   // OSRM, GOOGLE_MAPS, MANUAL
+  usuarioId   Int?
+  createdAt   DateTime @default(now())
+
+  @@map("historial_rutas")
+}
+
+model Peaje {
+  id            Int           @id @default(autoincrement())
+  nombre        String
+  sector        String?
+  responsable   String        @default("INVIAS") // INVIAS, ANI, CONCESION
+  codigoPeaje   String?
+  latitud       Float
+  longitud      Float
+  activo        Boolean       @default(true)
+  tarifas       TarifaPeaje[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([nombre])
+  @@map("peajes")
+}
+
+model TarifaPeaje {
+  id            Int       @id @default(autoincrement())
+  peajeId       Int
+  peaje         Peaje     @relation(fields: [peajeId], references: [id], onDelete: Cascade)
+  categoria     String    // CAT_I, CAT_II, CAT_III, CAT_IV, CAT_V, EJE_ADICIONAL
+  valor         Float
+  vigenciaDesde DateTime  @default(now())
+  vigenciaHasta DateTime?
+  fuente        String    @default("INVIAS_OFICIAL")
+  createdAt     DateTime  @default(now())
+
+  @@unique([peajeId, categoria, vigenciaDesde])
+  @@map("tarifas_peajes")
+}
+
+model PrecioAcpm {
+  id                Int                   @id @default(autoincrement())
+  municipioId       Int?
+  municipio         Municipio?            @relation(fields: [municipioId], references: [id])
+  departamentoNombre String?
+  ciudadNombre      String?
+  precioGalon       Float
+  fechaActualizacion DateTime             @default(now())
+  fuente            String                @default("OFICIAL_SICOM") // OFICIAL_SICOM, REGULATORIO_CREG, MANUAL
+  vigente           Boolean               @default(true)
+  historial         HistorialPrecioAcpm[]
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  @@map("precios_acpm")
+}
+
+model HistorialPrecioAcpm {
+  id            Int        @id @default(autoincrement())
+  precioAcpmId  Int
+  precioAcpm    PrecioAcpm @relation(fields: [precioAcpmId], references: [id], onDelete: Cascade)
+  precioGalon   Float
+  fuente        String
+  usuarioId     Int?
+  usuario       Usuario?   @relation(fields: [usuarioId], references: [id])
+  observaciones String?
+  fechaCambio   DateTime   @default(now())
+
+  @@map("historial_precios_acpm")
+}
+
+model ConfiguracionCosto {
+  id            Int      @id @default(autoincrement())
+  clave         String   @unique
+  valorNumerico Float?
+  valorTexto    String?
+  descripcion   String?
+  categoria     String   @default("GENERAL") // COMBUSTIBLE, CONDUCTOR, MANTENIMIENTO, PEAJES
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("configuraciones_costos")
+}
+
+model Cotizacion {
+  id                    Int       @id @default(autoincrement())
+  codigo                String    @unique // Ej. COT-2026-0001
+  clienteId             Int?
+  cliente               Cliente?  @relation(fields: [clienteId], references: [id])
+  vehiculoId            Int
+  vehiculo              Vehiculo  @relation(fields: [vehiculoId], references: [id])
+  rutaId                Int?
+  ruta                  Ruta?     @relation(fields: [rutaId], references: [id])
+  origenId              Int
+  origen                Municipio @relation("CotizacionOrigen", fields: [origenId], references: [id])
+  destinoId             Int
+  destino               Municipio @relation("CotizacionDestino", fields: [destinoId], references: [id])
+  tipoViaje             String    @default("IDA_Y_REGRESO") // SOLO_IDA, IDA_Y_REGRESO
+  distanciaKm           Float
+  pesoToneladas         Float
+  materialTransportado  String?
+  consumoGalonesEstimado Float
+  precioAcpmUsado       Float
+  costoCombustible      Float
+  costoConductor        Float
+  costoPeajes           Float
+  costoMantenimiento    Float
+  costoLlantas          Float
+  costoDepreciacion     Float
+  costoOtros            Float     @default(0)
+  costoTotal            Float
+  margenGananciaPct     Float
+  gananciaEsperada      Float
+  precioMinimo          Float
+  precioRecomendado     Float
+  precioCompetitivo     Float
+  precioFinalNegociado  Float?
+  estado                String    @default("BORRADOR") // BORRADOR, ENVIADA, APROBADA, RECHAZADA
+  snapshotDatos         String    // JSON inmutable con todos los cálculos y parámetros del momento
+  creadoPorId           Int
+  creadoPor             Usuario   @relation(fields: [creadoPorId], references: [id])
+  viaje                 Viaje?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("cotizaciones")
+}
+
+model Viaje {
+  id                   Int          @id @default(autoincrement())
+  codigo               String       @unique // Ej. VJ-2026-0001
+  cotizacionId         Int?         @unique
+  cotizacion           Cotizacion?  @relation(fields: [cotizacionId], references: [id])
+  vehiculoId           Int
+  vehiculo             Vehiculo     @relation(fields: [vehiculoId], references: [id])
+  conductorId          Int?
+  conductor            Conductor?   @relation(fields: [conductorId], references: [id])
+  clienteId            Int?
+  cliente              Cliente?     @relation(fields: [clienteId], references: [id])
+  fechaInicio          DateTime     @default(now())
+  fechaFin             DateTime?
+  kilometrajeInicial   Float        @default(0)
+  kilometrajeFinal     Float?
+  kmRealesRecorridos   Float        @default(0)
+  galonesRealesCargados Float       @default(0)
+  costoAcpmReal        Float        @default(0)
+  pesoRealToneladas    Float        @default(0)
+  estado               String       @default("PROGRAMADO") // PROGRAMADO, EN_TRANSITO, FINALIZADO, CANCELADO
+  ingresoCobrado       Float        @default(0)
+  costoTotalReal       Float        @default(0)
+  gananciaNetaReal     Float        @default(0)
+  snapshotDatos        String?      // JSON inmutable
+  gastos               GastoViaje[]
+  creadoPorId          Int
+  creadoPor            Usuario      @relation(fields: [creadoPorId], references: [id])
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@map("viajes")
+}
+
+model GastoViaje {
+  id          Int      @id @default(autoincrement())
+  viajeId     Int
+  viaje       Viaje    @relation(fields: [viajeId], references: [id], onDelete: Cascade)
+  categoria   String   // COMBUSTIBLE, PEAJE, CONDUCTOR_VIATICOS, CARGUE_DESCARGUE, LAVADO, PARQUEADERO, MANTENIMIENTO, OTRO
+  concepto    String
+  valor       Float
+  soporteUrl  String?
+  fecha       DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@map("gastos_viaje")
+}
+
+model AuditoriaCambio {
+  id                Int      @id @default(autoincrement())
+  usuarioId         Int?
+  usuario           Usuario? @relation(fields: [usuarioId], references: [id])
+  tablaAfectada     String
+  registroId        Int
+  accion            String   // CREATE, UPDATE, DELETE
+  valoresAnteriores String?  // JSON
+  valoresNuevos     String?  // JSON
+  ip                String?
+  fecha             DateTime @default(now())
+
+  @@map("auditoria_cambios")
+}

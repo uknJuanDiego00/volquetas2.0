@@ -1,0 +1,24 @@
+{
+  "name": "volqueta-pro-monorepo",
+  "version": "1.0.0",
+  "description": "VOLQUETA PRO – Calculadora Inteligente de Transporte Pesado en Colombia",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "start": "node backend/dist/index.js",
+    "render:build": "npm --prefix backend install && npx --prefix backend prisma generate && npx --prefix backend prisma db push && npx --prefix backend tsx prisma/seed.ts && npm --prefix backend run build && npm --prefix frontend install && npm --prefix frontend run build",
+    "render:start": "node backend/dist/index.js",
+    "test": "npm --prefix backend test"
+  },
+  "keywords": [
+    "volquetas",
+    "transporte",
+    "colombia",
+    "acpm",
+    "peajes",
+    "vue3",
+    "express"
+  ],
+  "author": "VOLQUETA PRO Team",
+  "license": "ISC"
+}
